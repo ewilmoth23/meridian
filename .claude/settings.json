@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make help)",
+      "Bash(make install)",
+      "Bash(make install-dev)",
+      "Bash(make install-all)",
+      "Bash(make test)",
+      "Bash(make test-fast)",
+      "Bash(make cov)",
+      "Bash(make lint)",
+      "Bash(make typecheck)",
+      "Bash(make format)",
+      "Bash(make check)",
+      "Bash(make docs)",
+      "Bash(make migrate)",
+      "Bash(make run-cli)",
+      "Bash(make run-desktop)",
+      "Bash(make clean)"
+    ]
+  }
+}

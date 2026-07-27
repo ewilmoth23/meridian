@@ -1,0 +1,223 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "meridian"
+version = "0.1.0"
+description = "Meridian — the modern surveyor's suite. Where every line is true."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "Meridian Project" }]
+keywords = ["surveying", "geodesy", "GIS", "deed", "DXF", "GNSS", "lidar", "point cloud", "least squares"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+
+# Core dependencies — the things every install needs.
+dependencies = [
+    # Numerics
+    "numpy>=1.26",
+    "scipy>=1.11",
+    # Geometry
+    "shapely>=2.0",
+    "pyproj>=3.6",
+    # CAD / GIS / point-cloud I/O
+    "ezdxf>=1.2",
+    "lxml>=5.0",
+    "fiona>=1.9",
+    "geopandas>=0.14",
+    "laspy[lazrs]>=2.5",
+    # Persistence
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    # API
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "pydantic>=2.5",
+    "pydantic-settings>=2.2",
+    # Reports
+    "reportlab>=4.0",
+    "jinja2>=3.1",
+    # Utilities
+    "typer>=0.9",
+    "rich>=13.7",
+    "structlog>=24.1",
+    "platformdirs>=4.2",
+]
+
+[project.optional-dependencies]
+desktop = [
+    "PySide6>=6.6",
+    "pyvista>=0.43",       # 3D viewer (VTK wrapper)
+    "pyvistaqt>=0.11",
+    "pyqtgraph>=0.13",     # 2D plan view
+    "matplotlib>=3.8",
+]
+ocr = [
+    "pytesseract>=0.3.10",
+    "Pillow>=10.0",
+    "PyMuPDF>=1.24",
+    "opencv-python-headless>=4.9",
+]
+ai = [
+    "ollama>=0.1.7",
+    "openai>=1.10",
+    "anthropic>=0.20",
+]
+pointcloud = [
+    "pdal>=3.4 ; platform_system != 'Windows'",   # PDAL Python bindings
+    "open3d>=0.18 ; python_version < '3.13'",
+]
+field = [
+    "pyserial>=3.5",       # Total station / GNSS serial I/O
+    "pynmea2>=1.19",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+    "pytest-timeout>=2.2",
+    "pytest-asyncio>=0.23",
+    "pytest-benchmark>=4.0",
+    "hypothesis>=6.92",
+    "ruff>=0.3",
+    "mypy>=1.8",
+    "sphinx>=7.2",
+    "sphinx-rtd-theme>=2.0",
+    "myst-parser>=2.0",
+    "pre-commit>=3.6",
+]
+all = [
+    "meridian[desktop,ocr,ai,pointcloud,field,dev]",
+]
+
+[project.scripts]
+meridian = "meridian.cli.main:app"
+meridian-desktop = "meridian_desktop.app:main"
+
+[project.entry-points."meridian.instruments"]
+# First-party instrument drivers register here. Plugins add more.
+leica_gsi = "meridian.adapters.instruments.leica_gsi:LeicaGSIDriver"
+trimble_jxl = "meridian.adapters.instruments.trimble_jxl:TrimbleJXLDriver"
+sokkia_sdr = "meridian.adapters.instruments.sokkia_sdr:SokkiaSDRDriver"
+tds_rw5 = "meridian.adapters.instruments.tds_rw5:TDSRW5Driver"
+nikon_raw = "meridian.adapters.instruments.nikon_raw:NikonRawDriver"
+rinex = "meridian.adapters.instruments.rinex:RINEXDriver"
+nmea = "meridian.adapters.instruments.nmea:NMEADriver"
+
+[project.entry-points."meridian.exporters"]
+dxf = "meridian.adapters.cad.dxf_writer:DXFExporter"
+landxml = "meridian.adapters.cad.landxml_io:LandXMLExporter"
+shapefile = "meridian.adapters.gis.shapefile:ShapefileExporter"
+geopackage = "meridian.adapters.gis.geopackage:GeoPackageExporter"
+geojson = "meridian.adapters.gis.geojson:GeoJSONExporter"
+kml = "meridian.adapters.gis.kml:KMLExporter"
+las = "meridian.adapters.pointcloud.las_io:LASExporter"
+pdf_report = "meridian.adapters.reports.pdf_writer:PDFReportExporter"
+
+[project.entry-points."meridian.importers"]
+landxml = "meridian.adapters.cad.landxml_io:LandXMLImporter"
+shapefile = "meridian.adapters.gis.shapefile:ShapefileImporter"
+geojson = "meridian.adapters.gis.geojson:GeoJSONImporter"
+las = "meridian.adapters.pointcloud.las_io:LASImporter"
+
+# ─── Tooling ───────────────────────────────────────────────────────────────────
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/meridian", "src/meridian_desktop"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = ["-ra", "--strict-markers", "--strict-config", "--tb=short"]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m not slow')",
+    "integration: end-to-end integration tests",
+    "gpu: tests requiring a GPU",
+    "field: tests requiring field hardware (serial port, GNSS receiver)",
+]
+asyncio_mode = "auto"
+timeout = 60
+
+[tool.coverage.run]
+source = ["src/meridian", "src/meridian_desktop"]
+branch = true
+omit = ["**/migrations/**", "**/tests/**"]
+
+[tool.coverage.report]
+precision = 1
+fail_under = 80
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",   # pycodestyle, pyflakes
+    "I",             # isort
+    "B",             # bugbear
+    "UP",            # pyupgrade
+    "C4",            # comprehensions
+    "SIM",           # simplify
+    "RUF",           # ruff-specific
+    "N",             # pep8-naming
+    "D",             # pydocstyle
+]
+ignore = [
+    "D100", "D104",  # missing module/package docstrings — too aggressive
+    "D101", "D102", "D103",  # undocumented public class/method/function — noisy on dataclasses + ABCs
+    "D105", "D107",  # missing __magic__ / __init__ docstrings
+    "D203", "D213",  # docstring style conflicts
+    "D205",          # blank line between summary and description — fights with our paragraph style
+    "D209", "D400", "D401", "D404",  # docstring-style nitpicks; surveying domain prose is varied
+    "D415",          # missing trailing punctuation in summary
+    "B008",          # function-call-in-default-argument — Typer / FastAPI use this idiomatically
+    "UP042",         # class Foo(str, Enum) — using StrEnum requires 3.11 only; we keep both compat
+    "E501",          # line too long — handled by formatter
+    "E741",          # ambiguous-variable-name (we use `l` for the LS discrepancy vector by convention)
+    "RUF001", "RUF002", "RUF003",  # unicode chars (°, σ, π, Δ, ², ³) are intentional in surveying notation
+    "RUF012",        # mutable class default — false positive on dataclasses with field(default_factory=...)
+    "RUF022",        # __all__ ordering — we order by category, not alphabetic
+    "SIM108",        # if-else-instead-of-conditional-expression — readability call
+    "B905",          # zip-without-explicit-strict — we are explicit when it matters
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D", "S101", "F841", "B007", "RUF046"]
+"src/meridian/adapters/persistence/migrations/**" = ["D", "E", "F", "I"]
+"src/meridian/atlas/**" = ["RUF003"]   # we mention "→" in comments
+"src/meridian/echo/**" = ["RUF002"]    # GSD / aspect-ratio comments use mathematical notation
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_configs = true
+warn_redundant_casts = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = "src"
+# Pragmatic config: strict on the domain + math layers where bugs cause silent
+# wrong answers; permissive on adapters / services / UI shells where the
+# annotations would mostly be busywork against optional / dynamically-loaded
+# 3rd-party libraries (lxml, qrcode, pypdf, transformers, peft, ...).
+ignore_missing_imports = true
+warn_unused_ignores = false
+
+[[tool.mypy.overrides]]
+module = ["meridian.domain.*", "meridian.math.*", "meridian.ports.*"]
+strict = true
+disallow_any_generics = false  # numpy returns make this expensive
+no_implicit_optional = true
