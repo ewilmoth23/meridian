@@ -24,6 +24,27 @@ useful information — please open an issue rather than assuming it works for
 everyone else.
 
 
+## Screenshots
+
+Real output from a local run against the bundled sample network — no mockups.
+
+![Terminal showing meridian network adjust converging in 3 iterations with sigma-zero 0.000000, chi-square passes False, and adjusted coordinates for three points](docs/images/meridian-network-adjust.jpg)
+
+*A least-squares network adjustment on the bundled 3-4-5 triangle. P3 enters with an
+a-priori guess of (2.9, 3.9) and the Gauss-Newton solve pulls it to exactly (3.0000,
+4.0000) in three iterations. The interesting row is **χ² passes: False** — with three
+distance observations and zero residuals, σ₀ comes out at exactly 0, and the two-sided
+χ² test at α = 0.05 rejects that as implausibly good rather than reporting a pass. The
+global test is genuinely applied, not decorative.*
+
+![PDF adjustment report table listing per-point X, Y, Z, standard deviations, and error ellipse semi-axes and orientation](docs/images/meridian-adjustment-report.jpg)
+
+*The `--report` flag writes a PDF with the part that matters to a surveyor: posterior
+standard deviations and a 2σ horizontal error ellipse per point. The two fixed brass
+disks carry zero uncertainty; the set iron pin gets σx 0.0107, σy 0.0050, and an ellipse
+of 0.0274 / 0.0091 m oriented at 161.6° — derived from the propagated covariance matrix,
+not assumed.*
+
 > *Where every line is true.*
 
 Meridian takes survey observations — total station, GNSS, lidar, deed text — and
