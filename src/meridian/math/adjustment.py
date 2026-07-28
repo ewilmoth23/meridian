@@ -175,16 +175,28 @@ def error_ellipse_2d(cov_xy: np.ndarray, *, scale: float = 2.45) -> tuple[float,
     """
     if cov_xy.shape != (2, 2):
         raise ValueError(f"Expected 2x2 covariance, got {cov_xy.shape}")
-    # Eigendecomposition of the covariance.
+    # Eigendecomposition of the covariance. ``eigh`` is documented to return
+    # eigenvalues in ascending order, so index 1 is the major axis and index 0
+    # the minor; column ``v[:, 1]`` is the major axis direction.
     w, v = la.eigh(cov_xy)
-    # eigh returns ascending eigenvalues — flip to put the largest first
-    if w[0] > w[1]:
-        w = w[::-1]
-        v = v[:, ::-1]
-    a = float(scale * math.sqrt(max(w[1], 0)))
-    b = float(scale * math.sqrt(max(w[0], 0)))
+    a = _semi_axis(float(w[1]), scale)
+    b = _semi_axis(float(w[0]), scale)
     theta = float(math.atan2(v[1, 1], v[0, 1]))
     return a, b, theta
+
+
+def _semi_axis(eigenvalue: float, scale: float) -> float:
+    """Scale one covariance eigenvalue into a semi-axis length.
+
+    Clamps at zero rather than relying on ``max(w, 0)``: for a fixed point the
+    covariance block is all zeros and ``eigh`` returns ``-0.0``, which
+    ``max(-0.0, 0)`` preserves and ``math.sqrt`` propagates — rendering the
+    semi-minor axis as ``-0.0000`` in reports. Tiny negative eigenvalues from
+    round-off are clamped the same way.
+    """
+    if eigenvalue <= 0.0:
+        return 0.0
+    return float(scale * math.sqrt(eigenvalue))
 
 
 def detect_blunders(standardized: np.ndarray, *, threshold: float = 3.29) -> np.ndarray:

@@ -149,6 +149,18 @@ class LeicaGSIDriver(InstrumentDriver):
                             target_height=target_h,
                         )
                     )
+        # GSI carries no backsight-azimuth word, so setups come back unoriented.
+        # Downstream (`reduce_setup_observations`) then falls back to treating the
+        # raw horizontal circle reading as an azimuth. That is a real assumption
+        # about the data and the caller should hear about it rather than silently
+        # receive bearings that may be meaningless.
+        unoriented = sum(1 for s in setups if s.backsight_azimuth is None)
+        if unoriented:
+            warnings.append(
+                f"{unoriented} of {len(setups)} setup(s) have no backsight azimuth; "
+                "GSI does not record one. Horizontal circle readings (WI 21) will be "
+                "treated as absolute azimuths downstream — supply a backsight to orient them."
+            )
         return InstrumentReadResult(
             setups=tuple(setups),
             observations=tuple(observations),
@@ -166,11 +178,13 @@ def _parse_line(line: str) -> dict[int, float]:
       * ``20``: 100 mm
 
     For angles: WI 21 / 22 in GSI use either gons (gradians) or DMS
-    depending on instrument config; GSI files carry a units flag which
-    we read from a pseudo-word at file start. We default to **DMS**
-    (the most common Leica convention) and reinterpret if the file
-    flags otherwise — caller can override via ``angle_units`` keyword
-    for now we accept DMS-style ``DDMMSSss`` strings.
+    depending on instrument config. **This parser always reads them as
+    DMS** and ignores the scale code — the units flag is not yet read, and
+    there is no ``angle_units`` override. The layout consumed is
+    ``DD MM SSSSS``, where the trailing five digits are seconds × 1000, so
+    90° is ``900000000`` and *not* ``900000`` (which decodes to 0°09'00").
+    A gon-configured file will therefore be misread; see the known-gaps
+    section of the README.
     """
     out: dict[int, float] = {}
     for m in _WORD_RE.finditer(line):

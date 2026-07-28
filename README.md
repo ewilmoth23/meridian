@@ -18,6 +18,11 @@ Known gaps and caveats, stated up front:
 - Not validated against a certified reference dataset; no licensed surveyor has signed off on its output.
 - Deed parsing is assistive. Every parsed description needs human review.
 - Do not use it to produce a sealed deliverable without independent verification.
+- The Leica GSI driver always reads angle words as DMS and does not yet read the file's
+  angle-units flag, so a gon-configured instrument file will be misread. GSI carries no
+  backsight azimuth either, so setups arrive unoriented and horizontal circle readings are
+  treated as absolute azimuths downstream — the driver warns when this happens. See
+  [`data/samples/README.md`](data/samples/README.md).
 
 Issues and pull requests are welcome. If something breaks on first run, that is
 useful information — please open an issue rather than assuming it works for
@@ -36,6 +41,14 @@ a-priori guess of (2.9, 3.9) and the Gauss-Newton solve pulls it to exactly (3.0
 distance observations and zero residuals, σ₀ comes out at exactly 0, and the two-sided
 χ² test at α = 0.05 rejects that as implausibly good rather than reporting a pass. The
 global test is genuinely applied, not decorative.*
+
+![Terminal showing meridian traverse run closing a four-leg square with zero closure, 40 m perimeter, 100 m2 area, and a warning that no setup has a backsight azimuth](docs/images/meridian-traverse-run.jpg)
+
+*A closed four-leg traverse from a Leica GSI-16 file: exact closure, 40 m perimeter,
+100 m² clockwise. The yellow line is the point — GSI has no backsight-azimuth word, so
+the setups arrive unoriented and the pipeline falls back to reading horizontal circle
+readings as absolute azimuths. That assumption is now stated out loud instead of silently
+producing bearings that might mean nothing.*
 
 ![PDF adjustment report table listing per-point X, Y, Z, standard deviations, and error ellipse semi-axes and orientation](docs/images/meridian-adjustment-report.jpg)
 

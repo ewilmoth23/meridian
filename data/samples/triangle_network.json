@@ -1,0 +1,16 @@
+{
+  "name": "Sample 3-4-5 triangle",
+  "points": [
+    {"id": "P1", "x": 0,   "y": 0, "z": 0, "fixed": true,  "monument": "brass_disk"},
+    {"id": "P2", "x": 3,   "y": 0, "z": 0, "fixed": true,  "monument": "brass_disk"},
+    {"id": "P3", "x": 2.9, "y": 3.9, "z": 0, "fixed": false, "monument": "iron_pin_set"}
+  ],
+  "observations": [
+    {"id": "d12", "setup_id": "S1", "kind": "horizontal_distance",
+     "from_point": "P1", "to_point": "P2", "value": 3.0, "sigma": 0.005},
+    {"id": "d13", "setup_id": "S2", "kind": "horizontal_distance",
+     "from_point": "P1", "to_point": "P3", "value": 5.0, "sigma": 0.005},
+    {"id": "d23", "setup_id": "S3", "kind": "horizontal_distance",
+     "from_point": "P2", "to_point": "P3", "value": 4.0, "sigma": 0.005}
+  ]
+}

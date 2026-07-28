@@ -215,14 +215,25 @@ def traverse_run(
     table.add_row("Observations", str(res.observations_count))
     table.add_row("Legs", str(res.legs_count))
     table.add_row("Closure (m)", f"{res.result.closure_distance:.4f}")
-    ratio = "∞" if math.isinf(res.result.closure_ratio) else f"1:{res.result.closure_ratio:,.0f}"
+    # A closure of a few float-epsilon metres is exact for any real survey, but it
+    # is not exactly 0.0, so the raw ratio comes out as an absurd 1:1.6e16. Report
+    # anything past 1:10,000,000 as effectively perfect instead of printing noise.
+    raw_ratio = res.result.closure_ratio
+    if math.isinf(raw_ratio) or raw_ratio > 1e7:
+        ratio = "1:∞ (closure below numerical noise)"
+    else:
+        ratio = f"1:{raw_ratio:,.0f}"
     table.add_row("Closure ratio", ratio)
     table.add_row("Perimeter (m)", f"{res.result.perimeter:,.3f}")
-    table.add_row("Area (m²)", f"{res.result.area:,.3f}")
+    # ``area`` is signed by design (CCW positive) — the sign encodes traversal
+    # direction, not a negative parcel. Surface magnitude and direction separately
+    # so the table cannot be misread as a negative area.
+    direction = "counter-clockwise" if res.result.area >= 0 else "clockwise"
+    table.add_row("Area (m²)", f"{abs(res.result.area):,.3f} ({direction})")
     table.add_row("Method", res.result.method)
     console.print(table)
-    if res.warnings:
-        console.print(f"[yellow]{len(res.warnings)} warnings — first: {res.warnings[0]}[/yellow]")
+    for warning in res.warnings:
+        console.print(f"[yellow]warning:[/yellow] {warning}")
 
 
 # ── cloud ──────────────────────────────────────────────────────────────────

@@ -32,7 +32,11 @@ build/
 *.sqlite3
 *.log
 logs/
-data/
+# Survey data stays local by default — never commit real client observations,
+# point clouds, or geoid grids. The synthetic fixtures under data/samples/ are
+# the exception: the README and quick-start commands depend on them.
+data/*
+!data/samples/
 briefs/
 _versions/
 _archive/
