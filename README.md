@@ -1,11 +1,28 @@
 # Meridian
 
+
 **A professional surveying suite — real geodetic math, hexagonal architecture, plugin-first.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-523-brightgreen.svg)](tests/)
 [![Property-based](https://img.shields.io/badge/property--based-hypothesis-6E4C9E.svg)](https://hypothesis.readthedocs.io/)
+
+## Project status
+
+> **Actively developed, pre-1.0. Not production survey software.** This is a personal project built in the open, published so the
+> work can be read and run. It is not a supported product.
+
+Known gaps and caveats, stated up front:
+
+- Not validated against a certified reference dataset; no licensed surveyor has signed off on its output.
+- Deed parsing is assistive. Every parsed description needs human review.
+- Do not use it to produce a sealed deliverable without independent verification.
+
+Issues and pull requests are welcome. If something breaks on first run, that is
+useful information — please open an issue rather than assuming it works for
+everyone else.
+
 
 > *Where every line is true.*
 
